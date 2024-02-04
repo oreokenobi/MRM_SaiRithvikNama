@@ -1,4 +1,5 @@
 
+
 #### Description of the task:
 
 "**Implement the Autonomous Traversal of the 4 wheel bot designed in the Group Task from one GPS Coordinate to another using C++ and OOP Concepts (consider no obstacles in the path).**"
@@ -37,10 +38,11 @@ Movement data:
 
 #### RQT Graphs:
 
-1. ![[Pasted image 20240204145058.png]]
+1. ![Image 1](https://media.discordapp.net/attachments/1189820669039493224/1203708824070918144/Pasted_image_20240204145936.png?ex=65d21433&is=65bf9f33&hm=b9b0ec79691c21ea091b015184bf537d04440c43a055d1f7dd8a3bdd788a641a&=&format=webp&quality=lossless&width=1578&height=870)
 
-2. ![[Pasted image 20240204145936.png]]
+2. ![Image 2](https://media.discordapp.net/attachments/1189820669039493224/1203708935719092244/Pasted_image_20240204145058.png?ex=65d2144e&is=65bf9f4e&hm=79304b107783dfb8117fe5565b5e279854e7574782869c6b80805f842cc025cb&=&format=webp&quality=lossless&width=1577&height=870)
 
 #### YouTube link:
 [VIdeo of the global planner](https://youtu.be/T8cuzletHKE)
+
 
