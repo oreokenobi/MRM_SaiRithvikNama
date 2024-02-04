@@ -1,0 +1,503 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name= "my_rover">
+
+	<!--Including inertia matrix calculations file-->
+	<xacro:include filename="inertial_macros.xacro"/>
+
+
+	<!--Constants-->
+    	<xacro:property name="pi" value="3.14159"/>
+
+
+	<!-- Main Robot Chassis properties-->
+		<!--Dimensions-->
+		<xacro:property name="chassis_length" value="1.0"/>
+		<xacro:property name="chassis_width" value="0.6"/>
+		<xacro:property name="chassis_height" value="0.3"/>
+
+		<!--Mass-->
+		<xacro:property name="chassis_mass" value="10.0"/>
+	
+
+	<!-- Wheel properties-->
+		<!--Dimensions-->
+		<xacro:property name="wheel_length" value="0.1"/>
+		<xacro:property name="wheel_radius" value="0.2"/>
+
+		<!--Mass-->
+		<xacro:property name="wheel_mass" value="0.1"/>
+	
+
+
+	<!--Colours in RViz-->
+	    <material name="blue">
+			<color rgba="0 0 1 1"/>
+		</material>
+		 
+		<material name="white">
+			<color rgba="1 1 1 1"/>
+	    </material>
+	 
+		<material name="red">
+			<color rgba="1 0 0 1"/>
+		</material>
+			 
+		<material name="green">
+			<color rgba="0 1 0 1"/>
+		</material>
+		
+		<material name="black">
+			<color rgba="0 0 0 1"/>
+		</material>
+		 
+		
+		<material name="orange">
+			<color rgba="1 0.6 0 1"/>
+		</material>
+			 
+
+		<!--<material name="orange">
+			<color rgba="1 0.06 0 1"/>
+		</material>-->
+
+	<!-- Including the gazebo file-->
+	<xacro:include filename="$(find rover_package)/urdf/rover_plugins.gazebo" />
+	
+	<!-- Gazebo-related extras
+	     https://wiki.ros.org/simulator_gazebo/Tutorials/ListOfMaterials
+	-->
+
+	<gazebo reference="front_left_wheel">
+		<material>Gazebo/Black</material>
+		
+		<mu1>0.1</mu1>
+		<mu2>0.1</mu2>
+
+		<kp>1000000.0</kp> 
+		<kd>100.0</kd>
+
+		<maxVel>0.5</maxVel>
+		<minDepth>0.0</minDepth>
+	</gazebo>
+
+	<gazebo reference="front_right_wheel">
+		<material>Gazebo/Black</material>
+		
+		<mu1>0.1</mu1>
+		<mu2>0.1</mu2>
+
+		<kp>1000000.0</kp> 
+		<kd>100.0</kd>
+
+		<maxVel>0.5</maxVel>
+		<minDepth>0.0</minDepth>
+	</gazebo>
+
+	<gazebo reference="rear_left_wheel">
+		<material>Gazebo/Black</material>
+		
+		<mu1>0.1</mu1>
+		<mu2>0.1</mu2>
+
+		<kp>1000000.0</kp> 
+		<kd>100.0</kd>
+
+		<maxVel>0.5</maxVel>
+		<minDepth>0.0</minDepth>
+	</gazebo>
+
+	<gazebo reference="rear_right_wheel">
+		<material>Gazebo/Black</material>
+		
+		<mu1>0.1</mu1>
+		<mu2>0.1</mu2>
+
+		<kp>1000000.0</kp> 
+		<kd>100.0</kd>
+
+		<maxVel>0.5</maxVel>
+		<minDepth>0.0</minDepth>
+
+	</gazebo>
+	
+	<gazebo reference="rover_chassis">
+		<material>Gazebo/Orange</material>
+	</gazebo>
+
+	<gazebo reference="camera_link">
+		<material>Gazebo/Black</material>
+	</gazebo>
+
+	<gazebo reference="zed2_camera_link">
+		<material>Gazebo/DarkGrey</material>
+	</gazebo>
+
+	<gazebo reference="lidar">
+		<material>Gazebo/DarkGrey</material>
+	</gazebo>
+
+	<gazebo reference="gps">
+		<material>Gazebo/Red</material>
+	</gazebo>
+	
+	<gazebo reference="imu">
+		<material>Gazebo/Green</material>
+	</gazebo>
+
+	<gazebo reference="mast_link">
+		<material>Gazebo/Orange</material>
+	</gazebo>
+
+	<!--#### Link and Joint Definitions ####-->
+
+	<!--
+	Robot Footprint: It's a dummy link needed to avoid a warning which can pop up when there's inertials for the root link
+	https://robotics.stackexchange.com/questions/103262/urdf-what-is-a-dummy-link-needed-for
+	-->
+	<link name= "footprint"/>
+
+	<joint name="footprint_joint" type="fixed">
+    	<parent link = "footprint"/>
+    	<child link= "rover_chassis"/>
+		<origin xyz= "0 0 0.3" rpy="0 0 ${pi}"/>
+	</joint>
+	
+	<!--Rover chassis-->
+
+	<link name = "rover_chassis">
+		
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size= "${chassis_length} ${chassis_width} ${chassis_height}"/>
+			</geometry>
+			<material name="orange"/>
+		</visual>
+		
+		<collision>
+			<geometry>
+				<box size= "${chassis_length} ${chassis_width} ${chassis_height}"/>
+			</geometry>
+		</collision>
+
+		
+		<xacro:inertial_box mass="${chassis_mass}" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+
+	</link>
+
+	<!--Wheel joint definitions.The parameter reflectLR is for left/right, reflectFB is for front/back wheels.-->
+	
+	<!-- XY axis is down and to the right. Front= -x, Rear= +x, Left=-y, Right=+y--> 
+	
+	<!--
+		NOTE: To accommodate the retarded camera/zed2 orientation, I had to swap the coordinates for front and back wheels. 
+		NOTE 2: Scrapped because it doesn't jive with cmd_vel orientations
+	-->
+
+	<!--
+		NOTE 3: To have the yaw be the correct way round, and also have cmd_vel move the robot the right way, we need to flip the footprint and all the wheel joints by 180 about x. 
+	
+	-->
+
+	<xacro:macro name="wheel_joint" params="name child reflectFB reflectLR">
+		<joint name="${name}_joint" type="continuous">
+    		<parent link="rover_chassis"/>
+    		<child link="${child}"/>
+    		<origin xyz="${reflectFB*(0.3)} ${reflectLR*(0.35)} -0.1" rpy="${pi/2} 0 ${pi}"/>         <!--NOTE TO SELF: ADJUST VALUES & REPLACE LATER WITH THIS:${reflectFB*((chassis_length/2)-0.05)} ${reflectLR*({chassis_width/2+0.05}-->
+			<axis xyz="0 0 1"/>    
+			<limit effort="100" velocity="100" />
+    		<dynamics damping="0.1" friction="0.1" />                                  		    
+		</joint>
+	</xacro:macro>
+
+	<!--To orient wheels according to the proper ROS convention, so that clockwise yaw=-ve, we'd need to change FB from original values.-->
+	<xacro:wheel_joint name="front_left" child="front_left_wheel" reflectFB="1" reflectLR="1" /> 	<!--originally -1,-1-->
+	<xacro:wheel_joint name="front_right" child="front_right_wheel" reflectFB="1" reflectLR="-1"/>	<!--originally -1,+1-->
+	<xacro:wheel_joint name="rear_left" child="rear_left_wheel" reflectFB="-1" reflectLR="1" />		<!--originally 1,-1-->
+	<xacro:wheel_joint name="rear_right" child="rear_right_wheel" reflectFB="-1" reflectLR="-1" />	<!--originally 1,+1-->
+
+
+
+	<!--Wheels-->
+
+
+	<xacro:macro name="wheel_link" params="name">
+		<link name="${name}_wheel">
+    		
+			<visual>
+    			<origin xyz="0 0 0" rpy="0 0 0"/>
+        		<geometry>
+            		<cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        		</geometry>
+        		<material name="black"/>
+    		</visual>
+    		
+			<collision>
+        		<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        		<geometry>
+            		<cylinder radius="${wheel_radius}" length="0.1"/>
+        		</geometry>
+    		</collision>
+		
+			<xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+			</xacro:inertial_cylinder>
+		
+		</link>
+	</xacro:macro>
+
+
+
+	<xacro:wheel_link name="front_left" />
+	<xacro:wheel_link name="front_right" />
+	<xacro:wheel_link name="rear_left" />
+	<xacro:wheel_link name="rear_right" />
+
+
+	<!--LIDAR-->
+
+	<joint name="lidar_joint" type="fixed">
+		<parent link="rover_chassis"/>
+		<child link="lidar"/>
+		<origin xyz="0.3 0 ${chassis_height/2}" rpy="0 0 0"/>                                           									<!--<origin xyz="-0.3 0 ${chassis_height/2}" rpy="0 0 0"/>    -->
+		<axis xyz="0 0 1"/>                                      		    
+	</joint>
+
+
+	<link name = "lidar">
+		
+		<visual>
+			<origin xyz="0 0 ${chassis_height/8}" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length= "${chassis_height/4}" radius= "${chassis_height/3}"/>
+			</geometry>
+			<material name="black"/>
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 ${chassis_height/8}" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length= "${chassis_height/4}" radius= "${chassis_height/3}"/>
+			</geometry>
+		</collision>
+
+		
+		<xacro:inertial_cylinder mass="${wheel_mass}" length="${chassis_height/4}" radius="${chassis_height/3}">
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+		</xacro:inertial_cylinder>
+
+	</link>
+
+	<!--Mast-->
+
+	<joint name="mast_joint" type="fixed">
+		<parent link="rover_chassis"/>
+		<child link="mast_link"/>
+		<origin xyz="0.15 0 ${chassis_height/2}" rpy="0 0 0"/>                                           								<!--<origin xyz="0.3 0 ${chassis_height/2}" rpy="0 0 0"/>     -->
+		<axis xyz="0 0 1"/>                                      		    
+	</joint>
+
+
+	<link name = "mast_link">
+		
+		<visual>
+			<origin xyz="0 0 ${chassis_height/2}" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length= "${chassis_height}" radius= "${chassis_height/8}"/>
+			</geometry>
+			<material name="orange"/>
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length= "${(chassis_height)}" radius= "${chassis_height/8}"/>
+			</geometry>
+		</collision>
+
+		
+		<xacro:inertial_cylinder mass="${2*wheel_mass}" length="${chassis_height}" radius="${chassis_height/8}">
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+		</xacro:inertial_cylinder>
+
+	</link>
+
+	<!--#### Cameras and Zed2 #### -->
+	
+	<!-- 
+		Note: The cameras face the other direction. They're designed to face +x, which means that we'd either need to design the robot keeping all of this in mind.
+		If we have made our model already, we need to add links to orient the cameras the right way.
+		
+		By convention, these links are called device_link_optical, while the "physical" links are called device_link.
+
+	    https://answers.ros.org/question/362848/how-do-i-rotate-a-camera-plugin-in-my-model/
+		https://articulatedrobotics.xyz/mobile-robot-9-camera/
+	-->
+
+
+
+	<!--Camera-->
+	
+	<joint name= "camera_joint" type="fixed">
+			<parent link="mast_link"/>
+			<child link="camera_link"/>
+			<origin xyz="0 0 ${chassis_height}" rpy="0 0 0"/>                
+			<!--<axis xyz="0 -1 0"/>-->
+	</joint>
+	
+
+	<link name = "camera_link">
+		
+		<visual>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry>
+				<box size= "0.1 0.2 0.05"/>
+			</geometry>
+			<material name="black"/>
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry>
+				<box size= "0.1 0.2 0.1"/>
+			</geometry>
+		</collision>
+
+
+		<xacro:inertial_box mass="${wheel_mass}" x="0.1" y="0.2" z="0.05">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+
+
+	</link>
+
+	<joint name= "camera_optical_joint" type="fixed">
+		<parent link="camera_link"/>
+		<child link="camera_link_optical"/>
+		<origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>           
+	</joint>
+	
+	<link name="camera_link_optical"></link>
+
+	<!--Zed2-->
+
+
+	<joint name= "zed2_joint" type="fixed">
+			<parent link="camera_link"/>
+			<child link="zed2_camera_link"/>
+			<origin xyz="0 0 0.10" rpy="0 0 0"/>         
+			<!--<axis xyz="0 -1 0"/> -->                                               		   
+	</joint>
+	
+
+	<link name = "zed2_camera_link">
+		
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size= "0.1 0.3 0.1"/>
+			</geometry>
+			<material name="black"/>
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry> 
+				<box size= "0.1 0.3 0.1"/>
+			</geometry>
+		</collision>
+
+		<xacro:inertial_box mass="${wheel_mass}" x="0.1" y="0.3" z="0.1">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+
+	</link>
+
+	<joint name= "zed2_optical_joint" type="fixed">
+		<parent link="zed2_camera_link"/>
+		<child link="zed2_camera_link_optical"/>
+		<origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>                                                        		   
+	</joint>
+	<link name="zed2_camera_link_optical"></link>
+
+	<!--GPS-->
+
+	<joint name= "gps_joint" type="fixed">
+		<parent link="rover_chassis"/>
+		<child link="gps"/>
+		<origin xyz="-0.05 0 ${chassis_height/2}" rpy="0 0 0"/>                                                             		   
+	</joint>
+
+
+	<link name = "gps">
+	
+		<visual>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry>
+				<box size= "0.05 0.05 0.05"/>
+			</geometry>
+			<material name="blue"/>
+		</visual>
+	
+		<collision>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry> 
+				<box size= "0.05 0.05 0.05"/>
+			</geometry>
+		</collision>
+
+
+		<xacro:inertial_box mass="${wheel_mass}" x="0.05" y="0.05" z="0.05">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+
+	</link>
+
+
+	<!--IMU-->
+
+	<joint name= "imu_joint" type="fixed">
+		<parent link="rover_chassis"/>
+		<child link="imu"/>
+		<origin xyz="-0.10 0 ${chassis_height/2}" rpy="0 0 0"/>                                                             		   
+	</joint>
+
+
+	<link name = "imu">
+	
+		<visual>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry>
+				<box size= "0.05 0.05 0.05"/>
+			</geometry>
+			<material name="green"/>
+		</visual>
+	
+		<collision>
+			<origin xyz="0 0 0.025" rpy="0 0 0"/>
+			<geometry> 
+				<box size= "0.05 0.05 0.05"/>
+			</geometry>
+		</collision>
+
+		<xacro:inertial_box mass="${wheel_mass}" x="0.05" y="0.05" z="0.05">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+
+	</link>
+
+ </robot>
+
+<!--
+										Other issues encountered:
+https://stackoverflow.com/questions/46355454/how-to-fix-error-the-markup-in-the-document-following-the-root-element-must-be
+
+-->
+
+<!-- 
+					    				Teleop Node Command:
+				      rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+-->

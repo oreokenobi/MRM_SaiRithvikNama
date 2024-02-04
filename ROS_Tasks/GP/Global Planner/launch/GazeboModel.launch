@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+
+<launch>
+     
+    <!-- The URDF/Xacro details are sent to the robot_description parameter. -->
+
+    <param name="robot_description" command="$(find xacro)/xacro '$(find rover_package)/urdf/my_rover.xacro'" />
+    
+
+    <!-- Pose details -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="3.14159265358979323846"/>
+
+  
+    <!-- World File -->
+    <arg name="world_file" default="$(find rover_package)/worlds/empty.world"/>
+  
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="use_sim_time" value="true"/>
+      <arg name="debug" value="false"/>
+      <arg name="gui" value="true" />
+      <arg name="world_name" value="$(arg world_file)"/>
+    </include>
+    
+    <!-- Nodes -->
+  
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
+          args="-urdf -param robot_description -model my_rover
+                -x $(arg x) -y $(arg y) -z $(arg z)
+                -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
+    
+    <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find rover_package)/default.rviz"/>
+  
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />       
+  	
+    <node pkg="rover_package" type="globalPlanner" name="globalPlanner" output="screen" launch-prefix="gnome-terminal --command"/>
+    
+  </launch>
