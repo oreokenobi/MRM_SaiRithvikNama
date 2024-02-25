@@ -4,7 +4,7 @@
 2. One-hot encoding is done to encode the quality variable and get multiple classes using the `get_dummies()` function from pandas. This function shows boolean values by default, so datatype is specified by using `dtype=int`.
 3. The `normalise()` function normalises a range of values using z-score normalisation and is fed a column as input.  
 4. A column of ones is added to the feature matrix to function as the bias. This gets rid of the need for a separate bias matrix.
-5. The weight matrix is initialised as a matrix of ones. This matrix has 11 rows (for every feature) and 6 columns (for every class).    
+5. The weight matrix is initialised as a matrix of zeroes. This matrix has 11 rows (for every feature) and 6 columns (for every class).    
 6. The softmax function returns the probability that an input variable belongs to a particular class. Vectorisation is used here.
 7.  The gradient descent function works as follows:
     * It takes as input the x and y values. These are the values of the features and true outputs from the training dataset.  
