@@ -55,6 +55,7 @@ while True:
             rotation_matrix, _ = cv.Rodrigues(rVec[i])
             rotation = R.from_matrix(rotation_matrix)
             rpy = []
+            quaternion=[]
             rpy = rotation.as_euler("xyz", degrees=True)
             quaternion = rotation.as_quat()
 
