@@ -29,7 +29,7 @@ while True:
     gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     marker_corners, marker_IDs, reject = aruco.detectMarkers(
         gray_frame, marker_dict, parameters=param_markers
-    )
+    )   
 
     if marker_corners:
         rVec, tVec, _ = aruco.estimatePoseSingleMarkers(
@@ -55,7 +55,7 @@ while True:
             rotation_matrix, _ = cv.Rodrigues(rVec[i])
             rotation = R.from_matrix(rotation_matrix)
             rpy = []
-            quaternion=[]
+            quaternion = []
             rpy = rotation.as_euler("xyz", degrees=True)
             quaternion = rotation.as_quat()
 
@@ -64,7 +64,7 @@ while True:
             cv.putText(
                 frame,
                 f"id: {id[0]} Dist: {round(distance, 2)}",
-                (top_left), #+ [-10, 0]),
+                (top_left),  # + [-10, 0]),
                 cv.FONT_HERSHEY_DUPLEX,
                 0.5,
                 (120, 10, 255),
@@ -74,11 +74,11 @@ while True:
 
             cv.putText(
                 frame,
-                f"x:{round(tVec[i][0][0],1)} y: {round(tVec[i][0][1],1)} ",
+                f"x:{round(tVec[i][0][0],1)} y: {-round(tVec[i][0][1],1)} ",
                 (bottom_right + [50, 0]),
                 cv.FONT_HERSHEY_DUPLEX,
                 0.5,
-                (120, 10, 255),
+                (120, 50, 255),
                 2,
                 cv.LINE_AA,
             )
@@ -89,7 +89,7 @@ while True:
                 (bottom_left + [-50, 0]),
                 cv.FONT_HERSHEY_DUPLEX,
                 0.5,
-                (120, 10, 255),
+                (120, 50, 255),
                 2,
                 cv.LINE_AA,
             )
@@ -100,7 +100,7 @@ while True:
                 (top_right + [-50, 0]),
                 cv.FONT_HERSHEY_DUPLEX,
                 0.5,
-                (120, 10, 255),
+                (120, 50, 255),
                 2,
                 cv.LINE_AA,
             )
