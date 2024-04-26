@@ -94,11 +94,12 @@ class PCL_Processor{
             pt.setFilterLimits(0.0, 5.0);
             pt.filter(*output_cloud);
 
-            //Finding ground plane points and getting those indices
+            //Finding ground plane points and getting those indices(We find the largest plane which ideally would be the ground plane)
             pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
             pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
             pcl::SACSegmentation<pcl::PointXYZ> seg;
 
+	 
             seg.setOptimizeCoefficients(true);
             seg.setModelType(pcl::SACMODEL_PLANE);
             seg.setMethodType(pcl::SAC_RANSAC);
@@ -113,57 +114,7 @@ class PCL_Processor{
             extract.setNegative(true);
             extract.filter(*output_cloud);
 
-            /*pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
-            tree->setInputCloud (output_cloud);
-
-            std::vector<pcl::PointIndices> cluster_indices;
-            pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-            ec.setClusterTolerance(0.1); 
-            ec.setMinClusterSize(5);
-            ec.setMaxClusterSize(50000);
-            ec.setSearchMethod(tree);
-            ec.setInputCloud(output_cloud);
-            ec.extract(cluster_indices);
-
-            double dist;
-            pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud_clustered(new pcl::PointCloud<pcl::PointXYZ>);
             
-            bool onLeft,onRight,inFront;
-            
-            double boundary=1.5,x_val,y_val,z_val;
-
-            double closest_dist=999999,closest_angle; int clust_ind=1;
-            onLeft=onRight=inFront=false;
-            //find closest cluster to determine case for turning at that instant
-            pcl::PointXYZ closest_point;
-            for (const auto& cluster : cluster_indices){
-                pcl::PointCloud<pcl::PointXYZ>::Ptr cluster_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-                
-                for (const auto& index : cluster.indices){
-                        
-                        cluster_cloud->push_back((*output_cloud)[index]);
-                        
-                    
-                        dist=std::sqrt(std::pow((*output_cloud)[index].x,2)+std::pow((*output_cloud)[index].y,2)+std::pow((*output_cloud)[index].z,2));
-                        if (distance < closest_dist) {
-                            closest_dist = distance;
-                            closest_point = (*output_cloud)[index];
-                        
-                    }
-                ROS_INFO("Cluster %d is at %f ", clust_ind++,closest_dist);
-                *output_cloud_clustered += *cluster_cloud;
-            }
-            double x_val=closest_point.x,y_val=closest_point.y,z_val=closest_point.z;
-            closest_angle=atan2(closest_point.z,closest_point.x);
-            //Cases:
-            
-            ROS_INFO("Closest point is at a distance of: %f and an angle of %f",closest_dist,closest_angle);
-            if(closest_dist<boundary){
-                if(closest_angle<)
-
-            }
-            */
-
             pcl::toROSMsg(*output_cloud, output_pcl2);
 
             output_pcl2.header = pcl_data->header;
